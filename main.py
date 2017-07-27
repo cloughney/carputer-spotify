@@ -1,11 +1,18 @@
-#!/home/chris/.virtualenvs/carputer/bin/python
-from flask import Flask
-from api import playback_api, playlist_api, tracklist_api
+#!/home/chris/.virtualenvs/car/bin/python
+import asyncio
+import websockets
+import json
 
-app = Flask(__name__)
-app.register_blueprint(playback_api, url_prefix = '/playback')
-app.register_blueprint(playlist_api, url_prefix = '/playlists')
-app.register_blueprint(tracklist_api, url_prefix = '/tracklist')
+async def on_connect(socket):
+	await socket.send(json.dumps({
+		'test': 'test'
+	}))
 
-if __name__ == '__main__':
-	app.run(debug=True)
+async def listen():
+	async with websockets.connect('ws://localhost:3000') as socket:
+		await on_connect(socket)
+		while True:
+			message = await socket.recv()
+			print(message)
+
+asyncio.get_event_loop().run_until_complete(listen())
